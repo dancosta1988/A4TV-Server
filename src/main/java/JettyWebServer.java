@@ -41,7 +41,7 @@ public class JettyWebServer {
 			
 			
 			System.out.println("WebSocket opened: " + session.getId());
-			this.session.setMaxIdleTimeout(3600000);
+			this.session.setMaxIdleTimeout(3600000*24);
 						
 			
 			
