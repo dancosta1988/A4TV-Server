@@ -8,7 +8,8 @@ public class SetTopBoxServer implements Runnable{
 	private int stbPort;
 	private JettyWebServer registedWebServer;
 	private String storedMessage = "";
-		
+	private boolean isRunning = false;
+	private ServerSocket serverSocket;
 	public SetTopBoxServer (int port) {
 		
 		stbPort = port;
@@ -16,12 +17,13 @@ public class SetTopBoxServer implements Runnable{
 	}
 	
 	public  void RunSetTopBoxServer ()throws IOException {
-        ServerSocket serverSocket = null;
+        serverSocket = null;
         try {
             serverSocket = new ServerSocket(stbPort);
         } catch (IOException e) {
             System.err.println("Could not listen on port: " + stbPort);
-            System.exit(1);
+            //System.exit(1);
+            return;
         }
 
         Socket clientSocket = null;
@@ -34,7 +36,7 @@ public class SetTopBoxServer implements Runnable{
         }
         System.err.println("Connection Accepted.");
         //out = new PrintWriter(clientSocket.getOutputStream(),true);
-        
+        isRunning = true;
         out = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8), true);
         
         in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -45,7 +47,7 @@ public class SetTopBoxServer implements Runnable{
         }
         
         String inputLine;        
-        while ((inputLine = in.readLine()) != null) {
+        while ((inputLine = in.readLine()) != null && isRunning) {
              //kkp.processInput(inputLine);
         	System.out.println("Received command from Mobile device: " + inputLine);
         	try {
@@ -61,7 +63,7 @@ public class SetTopBoxServer implements Runnable{
         in.close();
         clientSocket.close();
         serverSocket.close();
-        RunSetTopBoxServer();
+        //RunSetTopBoxServer();
     }
 	
 	public void register(JettyWebServer webserver){
@@ -80,6 +82,18 @@ public class SetTopBoxServer implements Runnable{
 			storedMessage = uiml;
 		}
 		return true;
+	}
+	
+	public void stopIt() {
+			isRunning = false;
+			try {
+				serverSocket.close();
+			}
+			catch (IOException e) {
+				// TODO Auto-generated catch block
+				System.err.println("Webserver is not online.");
+			}
+			
 	}
 
 	public void run() {

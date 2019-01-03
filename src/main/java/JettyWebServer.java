@@ -14,30 +14,40 @@ public class JettyWebServer {
 		
 		private Session session;
 		private boolean stbServerRunning = false;
-		private SetTopBoxServer stbServer;
+		private boolean discoveryRunning = false;
+		private SetTopBoxServer stbServer = new SetTopBoxServer(4444);
 		private String lastMessage = "";
-		private Thread discoveryThread, stbServerThread;
+		private Thread discoveryThread = new Thread(DiscoveryThread.getInstance());
+		private Thread stbServerThread = new Thread(stbServer);
 				
 		@OnOpen
 		public void onOpen(Session session) {
 			this.session = session;
+			stbServer.register(this);
 			
 			
 			//thread for broadcast
-			if(discoveryThread == null || !discoveryThread.isAlive()) {
-				discoveryThread = new Thread(DiscoveryThread.getInstance());
+			if(discoveryThread == null || !discoveryRunning) {
+				System.out.println("Discovery null?: " + discoveryThread + " isAlive? " + discoveryRunning);
+				//discoveryThread = new Thread(DiscoveryThread.getInstance());
+				discoveryRunning = true;
 				discoveryThread.start();
 			}
 			
 			
-			if(stbServerThread == null || !stbServerThread.isAlive()) {
-				stbServer = new SetTopBoxServer(4444);		
-				(stbServerThread = new Thread(stbServer)).start();
-				stbServer.register(this);
+			if(stbServerThread == null || !stbServerRunning) {
+				System.out.println("STB null?: " + stbServerThread + " isAlive? " + stbServerRunning);
+				//stbServer = new SetTopBoxServer(4444);		
+				//(stbServerThread = new Thread(stbServer)).start();
+				//stbServer.register(this);
 				stbServerRunning = true;
+				stbServerThread.start();
 				if(lastMessage != "")
 					stbServer.sendUIMLToMobileClient(lastMessage);
 			}
+			
+			System.out.println("STB isAlive? " + stbServerRunning);
+			stbServerRunning = true;
 			
 			
 			System.out.println("WebSocket opened: " + session.getId());
@@ -55,6 +65,7 @@ public class JettyWebServer {
 			stbServer.sendUIMLToMobileClient(txt);
 			lastMessage = txt;
 			
+			
 		}
 		
 		public String getLastMessage(){
@@ -64,7 +75,9 @@ public class JettyWebServer {
 		@OnClose
 		public void onClose(CloseReason reason, Session session) {
 			System.out.println("Closing a WebSocket due to " + reason);
-			stbServerRunning = false;
+			//stbServerRunning = false;
+			stbServer.stopIt();
+			
 			
 		}
 		
