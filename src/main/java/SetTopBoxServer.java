@@ -63,7 +63,7 @@ public class SetTopBoxServer implements Runnable{
         in.close();
         clientSocket.close();
         serverSocket.close();
-        //RunSetTopBoxServer();
+        RunSetTopBoxServer();
     }
 	
 	public void register(JettyWebServer webserver){

@@ -77,8 +77,7 @@ public class JettyWebServer {
 			System.out.println("Closing a WebSocket due to " + reason);
 			//stbServerRunning = false;
 			stbServer.stopIt();
-			
-			
+					
 		}
 		
 		public void sendResponse(String text){
