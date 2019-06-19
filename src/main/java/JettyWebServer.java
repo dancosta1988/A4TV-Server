@@ -52,11 +52,11 @@ public class JettyWebServer {
 			
 			System.out.println("WebSocket opened: " + session.getId());
 			this.session.setMaxIdleTimeout(3600000*24);
-						
-			
-			
+			this.session.setMaxBinaryMessageBufferSize(500000);
+			this.session.setMaxTextMessageBufferSize(500000);
 						
 		}
+		
 		
 		@OnMessage
 		public void onMessage(String txt, Session session) throws IOException {
